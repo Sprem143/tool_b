@@ -4,10 +4,10 @@ const Backup = require("../../features/ecomManagement/inventory/model/backup");
 const AutoFetchData = require('../../features/ecomManagement/inventory/model/autofetchdata')
 require('dotenv').config();
 const local = 'http://localhost:10000'
-const api = 'https://gstar-backend2-0.onrender.com'
+const api = 'https://tool-b.onrender.com'
 // const api = 'https://brand-b-1.onrender.com'
 const f_api = 'http://localhost:5173'
-const f_link = 'https://gstar02.vercel.app'
+const f_link = 'https://tool2-0.vercel.app/'
 
 
 exports.auth = async (req, res) => {
@@ -19,7 +19,7 @@ exports.auth = async (req, res) => {
   const oauth2Client = new google.auth.OAuth2(
     clientId,
     clientSecret,
-    `${local}/api/google/callback`
+    `${api}/api/google/callback`
   );
 
   const url = oauth2Client.generateAuthUrl({
@@ -27,7 +27,6 @@ exports.auth = async (req, res) => {
     scope: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
     state: JSON.stringify({ clientId, clientSecret }),
   });
-  console.log(url)
   res.json({ url });
 };
 
@@ -41,7 +40,7 @@ exports.callback = async (req, res) => {
   const oauth2Client = new google.auth.OAuth2(
     clientId,
     clientSecret,
-    `${local}/api/google/callback`
+    `${api}/api/google/callback`
   );
 
   try {
@@ -55,7 +54,7 @@ exports.callback = async (req, res) => {
     };
 
     res.redirect(
-      `${f_api}/google-sheet?tokens=${encodeURIComponent(JSON.stringify(redirectTokens))}`
+      `${f_link}/google-sheet?tokens=${encodeURIComponent(JSON.stringify(redirectTokens))}`
     );
   } catch (err) {
     console.error("OAuth Callback Error:", err);
@@ -103,7 +102,7 @@ exports.sheet = async (req, res) => {
   const oauth2Client = new google.auth.OAuth2(
     sheetdetails.clientId,
     sheetdetails.clientSecret,
-    `${local}/api/google/callback`
+    `${api}/api/google/callback`
   );
 
   oauth2Client.setCredentials(token);
