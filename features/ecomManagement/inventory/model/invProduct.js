@@ -1,7 +1,10 @@
 const mongoose = require('mongoose')
 
 const dataSchema = new mongoose.Schema({
-    vendor:String,
+    vendor:{
+        type:String,
+        lowercase: true
+    },
     account:String,
     'Input UPC':String,
     ASIN: String,

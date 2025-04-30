@@ -3,18 +3,20 @@ const router = express.Router();
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
-const {saveproduct, getproductlink, getinventorycard, downloadSyncedProduct,downloadBackup, alreadysavedproduct,deleteinventory, deletesynced} = require('./controller/file')
+const {saveproduct, getproductlink, getinventorycard, downloadSyncedProduct,downloadBackup, alreadysavedproduct,deleteinventory, deletesynced, uploadinvfile, viewinventoryfile, viewsynceddata} = require('./controller/file')
 const {thread1,thread2,thread3,thread4,thread5,thread6,thread7,thread8,thread9, thread10,thread11, thread12,thread13, thread14,thread15,thread16,thread17,thread18} = require('./controller/scrap')
 
 router.post('/saveproduct',saveproduct)
 router.post('/getproductlink',getproductlink)
 router.post('/getinventorycard',getinventorycard)
-router.get('/downloadSyncedProduct',downloadSyncedProduct)
+router.post('/downloadSyncedProduct',downloadSyncedProduct)
 router.get('/downloadBackup',downloadBackup)
 router.post('/alreadysavedproduct',alreadysavedproduct)
 router.post('/deleteinventory',deleteinventory)
 router.post('/deletesynced',deletesynced)
-
+router.post('/viewinventoryfile',viewinventoryfile)
+router.post('/viewsynceddata',viewsynceddata)
+router.post('/uploadinvfile',upload.single('file'),uploadinvfile)
 
 router.post('/thread1', thread1)
 router.post('/thread2', thread2)

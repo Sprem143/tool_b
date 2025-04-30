@@ -4,10 +4,10 @@ const Backup = require("../../features/ecomManagement/inventory/model/backup");
 const AutoFetchData = require('../../features/ecomManagement/inventory/model/autofetchdata')
 require('dotenv').config();
 const local = 'http://localhost:10000'
-const api = 'https://tool-b.onrender.com'
-// const api = 'https://brand-b-1.onrender.com'
+// const api = 'https://tool-b.onrender.com'
+const api = 'https://brand-b-1.onrender.com'
 const f_api = 'http://localhost:5173'
-const f_link = 'https://tool2-0.vercel.app/'
+const f_link = 'https://tool2-0.vercel.app'
 
 
 exports.auth = async (req, res) => {

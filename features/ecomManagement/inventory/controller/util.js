@@ -166,7 +166,7 @@ const boscov = async (url, account) => {
                                 'PriceRange': arr,
                                 'Image link': '',
                                 color: p.color,
-                                'Input UPC': p.upc,
+                                'Input UPC':'UPC'+ p.upc,
                                 'Fulfillment': data['Fulfillment'],
                                 'Amazon Fees%': data['Amazon Fees%'],
                                 'Amazon link': data['Amazon link'],
@@ -361,8 +361,6 @@ const saveData = async (utagData, url, account, html) => {
     } else {
         filterData = []
     }
-    console.log(datas.length)
-    console.log(filterData.length)
     let saved = await AutoFetchData.insertMany(filterData);
     if (Array.isArray(saved) && saved.length > 0) {
         let resp = await InvProduct.deleteMany({ account: account, 'Product link': url })

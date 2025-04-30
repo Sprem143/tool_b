@@ -4,7 +4,6 @@ const {belk, handleoutofstock, saveData, boscov } = require('./util')
 exports.thread1 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-1 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -38,7 +37,6 @@ exports.thread1 = async (req, res) => {
 exports.thread2 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-2 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -71,7 +69,6 @@ exports.thread2 = async (req, res) => {
 exports.thread3 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-3 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -104,7 +101,6 @@ exports.thread3 = async (req, res) => {
 exports.thread4 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-4 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -137,7 +133,6 @@ exports.thread4 = async (req, res) => {
 exports.thread5 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-5 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -170,7 +165,6 @@ exports.thread5 = async (req, res) => {
 exports.thread6 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-6 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -203,7 +197,6 @@ exports.thread6 = async (req, res) => {
 exports.thread7 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-7 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -236,7 +229,6 @@ exports.thread7 = async (req, res) => {
 exports.thread8 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-8 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -269,7 +261,6 @@ exports.thread8 = async (req, res) => {
 exports.thread9 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-9 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -302,7 +293,6 @@ exports.thread9 = async (req, res) => {
 exports.thread10 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-10 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -335,7 +325,6 @@ exports.thread10 = async (req, res) => {
 exports.thread11 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-11 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -368,7 +357,6 @@ exports.thread11 = async (req, res) => {
 exports.thread12 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-12 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -401,7 +389,6 @@ exports.thread12 = async (req, res) => {
 exports.thread13 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-13 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -434,7 +421,6 @@ exports.thread13 = async (req, res) => {
 exports.thread14 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-14 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -467,7 +453,6 @@ exports.thread14 = async (req, res) => {
 exports.thread15 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-15 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -499,7 +484,6 @@ exports.thread15 = async (req, res) => {
 exports.thread16 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-16 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -532,7 +516,6 @@ exports.thread16 = async (req, res) => {
 exports.thread17 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-17 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
@@ -565,7 +548,6 @@ exports.thread17 = async (req, res) => {
 exports.thread18 = async (req, res) => {
     try {
         let {url} = req.body;
-        console.log(`Thread-18 : ${url}`)
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
