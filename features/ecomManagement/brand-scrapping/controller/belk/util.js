@@ -14,11 +14,12 @@ const xlsx = require('xlsx')
 const { ZenRows } = require("zenrows");
 
 
-const checkifbrandalreadyscrap = async (brandname, url) => {
-    let brandwords = brandname.split(' ').filter(Boolean);
+const checkifbrandalreadyscrap = async (brandname,vendor) => {
+    let brandwords = brandname?.split(' ').filter(Boolean);
     brandwords = brandwords.map(word => word.toLowerCase());
 
-    let listedbrand = await Scrappedbrand.find({}, { brandurl: 1, _id: 0 });
+    let listedbrand = await Scrappedbrand.find({vendor:vendor}, { brandurl: 1, _id: 0 });
+    console.log(listedbrand)
     listedbrand = listedbrand.map(b => b.brandurl);
     for (let i of listedbrand) {
         let urlToCheck = i.toLowerCase();

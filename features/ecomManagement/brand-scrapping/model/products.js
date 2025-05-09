@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 
 const dataSchema = new mongoose.Schema({
-    email:String,
     account:String,
+    vendor:String,
     upc: String,
     productid: String,
     price: Number,

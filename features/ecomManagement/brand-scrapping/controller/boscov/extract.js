@@ -42,7 +42,7 @@ exports.fetchurl = async (req, res) => {
                 let brandname = producturl[0].split('/')[4].split('-')
                 brandname = brandname[0] == 'plus' ? brandname[2] : brandname[1]
                 console.log(brandname)
-                let isexisting = await checkifbrandalreadyscrap(brandname)
+                let isexisting = await checkifbrandalreadyscrap(brandname,'boscovs')
 
                 console.log(isexisting)
                 if (isexisting) {

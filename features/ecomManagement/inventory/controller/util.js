@@ -11,7 +11,7 @@ const Product = require('../../brand-scrapping/model/products')
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 
-async function fetchAndExtractVariable(html, variableName) {
+async function belk_productData(html, variableName) {
     const $ = cheerio.load(html);
     let variableValue;
     $('script').each((index, script) => {
@@ -413,7 +413,8 @@ async function belk(url, account) {
                     'Min Profit': data['Min Profit'],
                     ASIN: data.ASIN,
                     SKU: data.SKU,
-                   remark:'Product url not exist'
+                   remark:'Product url not exist',
+                   vendor:'belk'
                 })
             }
             await AutoFetchData.insertMany(productlist);
@@ -422,7 +423,7 @@ async function belk(url, account) {
         }
     }
     var html = await request.text();
-    var utagData = await fetchAndExtractVariable(html, 'utag_data');
+    var utagData = await belk_productData(html, 'utag_data');
 
     if (!utagData) {
         await delay(5000);
@@ -431,7 +432,7 @@ async function belk(url, account) {
             js_render: true,
         });
         html = await request.text();
-        utagData = await fetchAndExtractVariable(html, 'utag_data');
+        utagData = await belk_productData(html, 'utag_data');
     }
     return { utagData, html }
 }
@@ -532,4 +533,113 @@ const countDays = (date) => {
     return Math.floor(diff / (1000 * 60 * 60 * 24)); // Convert to days
 };
 
-module.exports = { handleoutofstock, belk, saveData, boscovbrandscraper, boscov, fetchProductData, countDays }
+async function academy(url, account){
+   console.log(url)
+    const client = new ZenRows(apikey);
+    let request = await client.get(url, {
+        premium_proxy: true,
+        js_render: true,
+    });
+    // ------handle if url doesn't exist
+    if (request.status == 410) {
+        request = await client.get(url, {
+            premium_proxy: true,
+            js_render: true,
+        });
+
+        if (request.status == 410) {
+            let productlist = []
+            let products = await InvProduct.find({ 'Product link': url })
+            for (let data of products) {
+                productlist.push({
+                    account: account,
+                    'Product link': url,
+                    'Current Quantity': 0,
+                    'Product price': data['Product price'],
+                    'Current Price': 0,
+                    'Image link': '',
+                    'Input UPC': data['Input UPC'],
+                    'Fulfillment': data['Fulfillment'],
+                    'Amazon Fees%': data['Amazon Fees%'],
+                    'Amazon link': data['Amazon link'],
+                    'Shipping Template': data['Shipping Template'],
+                    'Min Profit': data['Min Profit'],
+                    ASIN: data.ASIN,
+                    SKU: data.SKU,
+                   remark:'Product url not exist',
+                   vendor:'academy'
+                })
+            }
+            await AutoFetchData.insertMany(productlist);
+            await InvProduct.deleteMany({ account: account, 'Product link': url })
+            return 'notexist';
+        }
+    }
+    var html = await request.text();
+  let productData= await academy_extractProductData(html,url, account)
+}
+
+async function academy_extractProductData(html,url, account){
+       let key ='comp-blt51a442da3d780eaa'
+      const pattern = new RegExp(`window\\.ASOData\\[['"]${key}['"]\\]\\s*=\\s*{`);
+      const startMatch = html.match(pattern);
+    
+      if (!startMatch) {
+        console.log('Key not found');
+        return null;
+      }
+    
+      const startIndex = html.indexOf(startMatch[0]);
+      let i = html.indexOf('{', startIndex);
+      let braceCount = 0;
+      let endIndex = i;
+    
+      while (i < html.length) {
+        if (html[i] === '{') braceCount++;
+        else if (html[i] === '}') braceCount--;
+    
+        if (braceCount === 0) {
+          endIndex = i + 1;
+          break;
+        }
+        i++;
+      }
+    
+      const objectString = html.slice(html.indexOf('{', startIndex), endIndex);
+    
+      try {
+        let productData =JSON.parse(objectString);
+        let productArr = productData['api']['product-info']['productinfo']['sKUs']
+        let inventoryArr =productData['api']['inventory']['online']
+
+        const inventoryMap = inventoryArr.reduce((acc, i) => {
+            if (i?.skuId) {
+              acc[i.skuId] = i.availableQuantity ?? 0;
+            }
+            return acc;
+          }, {});
+
+
+        productArr = productArr.map((p)=>({
+            account:account,
+            upc:p?.descriptiveAttributes.UPCcode[0],
+            price: p?.price.salePrice,
+            size: p?.descriptiveAttributes.Size,
+            color: p?.descriptiveAttributes.Color,
+            img: p?.imageURL,
+            itemId: p?.skuId,
+            title:p.name,
+            quantity: inventoryMap[p?.skuId] || 0,
+            vendor:'academy',
+            url:url,
+            Brand: p['facet_Brands']
+        }))
+     console.log(productArr)
+        return productArr
+      } catch (err) {
+        console.error('JSON parsing error:', err.message);
+        return null;
+      }
+}
+
+module.exports = {academy, handleoutofstock, belk, saveData, boscovbrandscraper, boscov, fetchProductData, countDays }

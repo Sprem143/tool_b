@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
-const {fetchbrand,refreshdetails,currentdetails,deleteurl} = require('../../brand-scrapping/controller/belk/scrap')
+const {fetchbrand,refreshdetails,currentdetails,deleteurl, fetchurl} = require('../../brand-scrapping/controller/belk/scrap')
 const {thread1,thread2,thread3,thread4,thread5,thread6,thread7,thread8,thread9, thread10,thread11, thread12,thread13, thread14,thread15,thread16,thread17,thread18,} = require('../../brand-scrapping/controller/belk/thread')
 const {downloadProductExcel, uploadforcheck}= require('../controller/file')
 
@@ -13,6 +13,7 @@ router.post('/currentdetails',currentdetails)
 router.post('/deleteurl',deleteurl)
 router.post('/downloadProductExcel',downloadProductExcel)
 router.post('/uploadforcheck', upload.single('file'), uploadforcheck);
+router.post('/fetchurl', fetchurl);
 
 
 router.post('/thread1', thread1)

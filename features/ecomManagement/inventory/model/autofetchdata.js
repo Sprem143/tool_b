@@ -21,6 +21,7 @@ const autofetchdataSchema = new mongoose.Schema({
     'outofstock':String,
     remark:String,
     Brand:String,
+    vendor:String,
     Date: {
         type:String,
         default: new Date().toLocaleString()

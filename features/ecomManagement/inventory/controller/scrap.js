@@ -1,18 +1,20 @@
-const {belk, handleoutofstock, saveData, boscov } = require('./util')
+const { belk, handleoutofstock, saveData, boscov, academy } = require('./util')
 
 
 exports.thread1 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
+        //-----------------handle boscovs url------------
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
-        } else {
-            let {utagData, html}= await belk(url, account)
+
+            // --------handle belk url---------
+        } else if (url.startsWith('https://www.belk.com')) {
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
-              
             else {
                 if (
                     (Array.isArray(utagData.sku_inventory) && utagData.sku_inventory.length === 0) ||
@@ -21,10 +23,17 @@ exports.thread1 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
+
+        // -------------handle academy url -------
+        else if (url.startsWith('https://www.academy.com/')) {
+            let resp = await academy(url, account)
+        }
+
+
     } catch (error) {
         console.error(error.message);
         if (error.response) {
@@ -36,14 +45,14 @@ exports.thread1 = async (req, res) => {
 
 exports.thread2 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -53,8 +62,8 @@ exports.thread2 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -68,14 +77,14 @@ exports.thread2 = async (req, res) => {
 
 exports.thread3 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -85,8 +94,8 @@ exports.thread3 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -100,14 +109,14 @@ exports.thread3 = async (req, res) => {
 
 exports.thread4 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -117,8 +126,8 @@ exports.thread4 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -132,14 +141,14 @@ exports.thread4 = async (req, res) => {
 
 exports.thread5 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -149,8 +158,8 @@ exports.thread5 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -164,14 +173,14 @@ exports.thread5 = async (req, res) => {
 
 exports.thread6 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -181,8 +190,8 @@ exports.thread6 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -196,14 +205,14 @@ exports.thread6 = async (req, res) => {
 
 exports.thread7 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -213,8 +222,8 @@ exports.thread7 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -228,14 +237,14 @@ exports.thread7 = async (req, res) => {
 
 exports.thread8 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -245,8 +254,8 @@ exports.thread8 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -260,14 +269,14 @@ exports.thread8 = async (req, res) => {
 
 exports.thread9 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -277,8 +286,8 @@ exports.thread9 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -292,14 +301,14 @@ exports.thread9 = async (req, res) => {
 
 exports.thread10 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -309,8 +318,8 @@ exports.thread10 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -324,25 +333,25 @@ exports.thread10 = async (req, res) => {
 
 exports.thread11 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
                     (Array.isArray(utagData.sku_inventory) && utagData.sku_inventory.length === 0) ||
                     (utagData.sku_inventory.length === 1 && utagData.sku_inventory[0] === '0')
                 ) {
-                    let resp = handleoutofstock(utagData, url,account)
+                    let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -356,14 +365,14 @@ exports.thread11 = async (req, res) => {
 
 exports.thread12 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -373,8 +382,8 @@ exports.thread12 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-                await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -388,14 +397,14 @@ exports.thread12 = async (req, res) => {
 
 exports.thread13 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -405,8 +414,8 @@ exports.thread13 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -420,14 +429,14 @@ exports.thread13 = async (req, res) => {
 
 exports.thread14 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -437,8 +446,8 @@ exports.thread14 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -452,14 +461,14 @@ exports.thread14 = async (req, res) => {
 
 exports.thread15 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -469,8 +478,8 @@ exports.thread15 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -483,14 +492,14 @@ exports.thread15 = async (req, res) => {
 };
 exports.thread16 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -500,8 +509,8 @@ exports.thread16 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -515,14 +524,14 @@ exports.thread16 = async (req, res) => {
 
 exports.thread17 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
         } else {
-            let {utagData, html}= await belk(url, account)
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
@@ -532,8 +541,8 @@ exports.thread17 = async (req, res) => {
                     let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
     } catch (error) {
@@ -547,27 +556,38 @@ exports.thread17 = async (req, res) => {
 
 exports.thread18 = async (req, res) => {
     try {
-        let {url} = req.body;
+        let { url } = req.body;
         const account = req.body.account
+
+        //-----------------handle boscovs url------------
         if (url.startsWith('https://www.boscovs.com')) {
             url = url.split('.html')[0]
             let result = await boscov(url, account)
             result ? res.status(200).send(true) : res.status(500).json({ status: false, msg: "Internal server error" })
-        } else {
-            let {utagData, html}= await belk(url, account)
+
+            // --------handle belk url---------
+        } else if (url.startsWith('https://www.belk.com')) {
+            let { utagData, html } = await belk(url, account)
             if (utagData == 'notexist') return res.json(200).send(true)
             else {
                 if (
                     (Array.isArray(utagData.sku_inventory) && utagData.sku_inventory.length === 0) ||
                     (utagData.sku_inventory.length === 1 && utagData.sku_inventory[0] === '0')
                 ) {
-                    let resp = handleoutofstock(utagData, url,account)
+                    let resp = handleoutofstock(utagData, url, account)
                     if (resp) return res.status(200).send(true);
                 }
-               await saveData(utagData, url,account,html);
-                res.status(200).json({status:true});
+                await saveData(utagData, url, account, html);
+                res.status(200).json({ status: true });
             }
         }
+
+        // -------------handle academy url -------
+        else if (url.startsWith('https://www.academy.com/')) {
+            let resp = await academy(url, account)
+        }
+
+
     } catch (error) {
         console.error(error.message);
         if (error.response) {
