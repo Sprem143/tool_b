@@ -12,7 +12,7 @@ const finalProduct = require('../../model/finalProduct');
 const Scrappedbrand = require('../../model/scrappedbrand')
 const xlsx = require('xlsx')
 const { ZenRows } = require("zenrows");
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const connectionURL = `wss://browser.zenrows.com?apikey=${apikey}`;
 const generatesku = (upc, prefix, color = '', size = '') => {
     let a = size.split(' ');
@@ -46,306 +46,283 @@ const generatesku = (upc, prefix, color = '', size = '') => {
     sku = sku.replaceAll(',', '')
     return sku;
 }
+
+
 // async function walmartproductscraper(url, account) {
-//     console.log(url)
+//     console.log("Main URL:", url);
+//     let num = 0;
+
 //     try {
-//         const client = new ZenRows(apikey);
-//         const request = await client.get(url, {
-//             premium_proxy: true,
-//             js_render: true,
-//         });
-//         const html = await request.text();
-//         const $ = cheerio.load(html);
-//         // -----fetch  child link------------
-//         let linkContent = $('script[data-seo-id="schema-org-product"]').html().trim();
+//         (async () => {
+//             const browser = await puppeteer.connect({ browserWSEndpoint: connectionURL });
+//             const page = await browser.newPage();
 
-//         let parseData;
-//         try {
-//             parseData = JSON.parse(linkContent);
-//         } catch (e) {
-//             console.error("Invalid JSON", e);
-//         }
-//         let linkstack;
-//         if (Array.isArray(parseData)) {
-//             let contextValue = parseData[0]['hasVariant'];
-//             Array.isArray(contextValue) && contextValue.shift()
-//             linkstack = contextValue.map((c) => c.url)
-//         }
-//         console.log(linkstack)
-//         // -------fetch product details----
-//         const scriptContent = $('script#__NEXT_DATA__').html().trim();
-//         const jsonData = JSON.parse(scriptContent);
-//         const data = jsonData.props?.pageProps?.initialData?.data.product;
-//         let islowquantity = ''
-//         if (Array.isArray(data?.badges?.groups) && data?.badges?.groups.length > 0) {
-//             islowquantity = data.badges.groups[0].members[0].badgeContent[0].value.split(' ')[1]
-//         }
-//         let color = data.selectedVariantIds[0].replace('actual_color-', '')
-//         let size = data.selectedVariantIds[1].replace('size-', '')
-//         let prefix = 'RC-R3'
-//         let product = {
-//             brand: data?.brand.toLowerCase(),
-//             productid: data?.id,
-//             upc: data.upc,
-//             sku: generatesku(data.upc, prefix, color, size),
-//             price: data?.conditionOffers[0].price.price,
-//             available: data?.availabilityStatus,
-//             quantity: Number(islowquantity),
-//             belkTitle: data.name,
-//             url: 'https://www.walmart.com' + data.canonicalUrl,
-//             type: data.type,
-//             color: color,
-//             size: size,
-//             imgurl: data.variantsMap[data.id].imageInfo.allImages[0].url
-//         }
-//         let newProduct = new Product(product)
-//         let resp = await newProduct.save()
-//         let num = 0
-//         resp ? num += 1 : null
+//             await page.goto(url, { waitUntil: 'networkidle2' }); // ensures page fully loads
 
-//         //  --------scrap child url ----------
-//         for (let i = 0; i < linkstack.length; i++) {
-//             console.log(linkstack[i])
-//             const request = await client.get(linkstack[i], {
-//                 premium_proxy: true,
-//                 js_render: true,
-//             });
-//             const html = await request.text();
+//             const html = await page.content(); // get full HTML of the loaded page
 //             const $ = cheerio.load(html);
-//             const scriptContent = $('script#__NEXT_DATA__').html().trim();
-//             const jsonData = JSON.parse(scriptContent);
-//             const data = jsonData.props?.pageProps?.initialData?.data.product;
-//             let islowquantity2 = ''
-//             if (Array.isArray(data?.badges?.groups) && data?.badges?.groups.length > 0) {
-//                 islowquantity2 = data.badges.groups[0].members[0].badgeContent[0].value.split(' ')[1]
-//             }
-//             let color2 = data.selectedVariantIds[0].replace('actual_color-', '')
-//             let size2 = data.selectedVariantIds[1].replace('size-', '')
 
-//             let product = {
-//                 brand: data?.brand.toLowerCase(),
-//                 productid: data?.id,
-//                 upc: data.upc,
-//                 sku: generatesku(data.upc, prefix, color, size),
-//                 price: data?.conditionOffers[0].price.price,
-//                 available: data?.availabilityStatus,
-//                 quantity: Number(islowquantity2),
-//                 belkTitle: data.name,
-//                 url: 'https://www.walmart.com' + data.canonicalUrl,
-//                 type: data.type,
-//                 color: color2,
-//                 size: size2,
-//                 imgurl: data.variantsMap[data.id].imageInfo.allImages[0].url
+//             let linkContent = $('script[data-seo-id="schema-org-product"]').html()?.trim();
+//             let parseData = [];
+
+//             if (linkContent) {
+//                 try {
+//                     parseData = JSON.parse(linkContent);
+//                 } catch (e) {
+//                     console.error("Invalid JSON in schema-org-product:", e.message);
+//                 }
 //             }
-//             let newProduct = new Product(product)
-//             let resp = await newProduct.save()
-//             resp ? num += 1 : null
-//             console.log(num)
+
+//             let linkstack = [];
+//             if (Array.isArray(parseData)) {
+//                 let variants = parseData[0]?.hasVariant || [];
+//                 variants.shift(); // Remove self if present
+//                 linkstack = variants.map((c) => c.url);
+//             }
+//             console.log(linkstack.length)
+
+//             // ------- Fetch parent product details -------
+//             const scriptContent = $('script#__NEXT_DATA__').html()?.trim();
+//             const jsonData = JSON.parse(scriptContent);
+//             const data = jsonData.props?.pageProps?.initialData?.data?.product;
+
+//             if (!data) throw new Error("Main product data not found");
+
+//             let islowquantity = '';
+//             if (Array.isArray(data?.badges?.groups) && data?.badges?.groups.length > 0) {
+//                 islowquantity = data.badges.groups[0].members[0].badgeContent[0].value.split(' ')[1];
+//             }
+
+//             let color = data.selectedVariantIds?.[0]?.replace('actual_color-', '') || '';
+//             let size = data.selectedVariantIds?.[1]?.replace('size-', '') || '';
+//             let prefix = 'RC-R3';
+
+//             const product = {
+//                 brand: data?.brand?.toLowerCase(),
+//                 productid: data?.id,
+//                 upc: data?.upc,
+//                 sku: generatesku(data.upc, prefix, color, size),
+//                 price: data?.conditionOffers?.[0]?.price?.price,
+//                 available: data?.availabilityStatus,
+//                 quantity: Number(islowquantity),
+//                 belkTitle: data?.name,
+//                 url: 'https://www.walmart.com' + data?.canonicalUrl,
+//                 type: data?.type,
+//                 color,
+//                 size,
+//                 imgurl: data?.variantsMap?.[data.id]?.imageInfo?.allImages?.[0]?.url
+//             };
+
+//             try {
+//                 const newProduct = new Product(product);
+//                 const resp = await newProduct.save();
+//                 console.log(resp)
+//                 if (resp) num += 1;
+//             } catch (e) {
+//                 console.error("Failed to save parent product:", e.message);
+//             }
+//             await browser.close();
+//         })();
+
+//         // ------- Loop through child variant URLs with retry -------
+//         for (let childUrl of linkstack) {
+//             let success = false;
+//             let attempt = 0;
+
+//             while (!success && attempt < 2) {
+//                 try {
+//                     console.log(`Processing child URL (attempt ${attempt + 1}): ${childUrl}`);
+
+//                     (async () => {
+//                         const browser = await puppeteer.connect({ browserWSEndpoint: connectionURL });
+//                         const page = await browser.newPage();
+
+//                         await page.goto(url, { waitUntil: 'networkidle2' }); // ensures page fully loads
+
+//                         const html = await page.content(); // get full HTML of the loaded page
+//                         const $ = cheerio.load(html);
+
+//                         let linkContent = $('script[data-seo-id="schema-org-product"]').html()?.trim();
+//                         let parseData = [];
+
+//                         if (linkContent) {
+//                             try {
+//                                 parseData = JSON.parse(linkContent);
+//                             } catch (e) {
+//                                 console.error("Invalid JSON in schema-org-product:", e.message);
+//                             }
+//                         }
+
+//                         let linkstack = [];
+//                         if (Array.isArray(parseData)) {
+//                             let variants = parseData[0]?.hasVariant || [];
+//                             variants.shift(); // Remove self if present
+//                             linkstack = variants.map((c) => c.url);
+//                         }
+//                         console.log(linkstack.length)
+
+//                         // ------- Fetch parent product details -------
+//                         const scriptContent = $('script#__NEXT_DATA__').html()?.trim();
+//                         const jsonData = JSON.parse(scriptContent);
+//                         const data = jsonData.props?.pageProps?.initialData?.data?.product;
+
+//                         if (!data) throw new Error("Main product data not found");
+
+//                         let islowquantity = '';
+//                         if (Array.isArray(data?.badges?.groups) && data?.badges?.groups.length > 0) {
+//                             islowquantity = data.badges.groups[0].members[0].badgeContent[0].value.split(' ')[1];
+//                         }
+
+//                         let color = data.selectedVariantIds?.[0]?.replace('actual_color-', '') || '';
+//                         let size = data.selectedVariantIds?.[1]?.replace('size-', '') || '';
+//                         let prefix = 'RC-R3';
+
+//                         const product = {
+//                             brand: data?.brand?.toLowerCase(),
+//                             productid: data?.id,
+//                             upc: data?.upc,
+//                             sku: generatesku(data.upc, prefix, color, size),
+//                             price: data?.conditionOffers?.[0]?.price?.price,
+//                             available: data?.availabilityStatus,
+//                             quantity: Number(islowquantity),
+//                             belkTitle: data?.name,
+//                             url: 'https://www.walmart.com' + data?.canonicalUrl,
+//                             type: data?.type,
+//                             color,
+//                             size,
+//                             imgurl: data?.variantsMap?.[data.id]?.imageInfo?.allImages?.[0]?.url
+//                         };
+//                         const newProduct = new Product(product);
+//                         const resp = await newProduct.save();
+//                         if (resp) num += 1;
+//                         console.log("Saved product count:", num);
+//                         success = true;
+//                         await browser.close();
+//                     })();
+//                 } catch (childErr) {
+//                     console.error(`Error (attempt ${attempt + 1}) for ${childUrl}:`, childErr);
+//                     attempt += 1;
+//                 }
+//             }
+
+//             if (!success) {
+//                 console.warn(`Failed to process child URL after retrying: ${childUrl}`);
+//             }
 //         }
-//         console.log(num)
-//         return num
+
+//         console.log("Total products saved:", num);
+//         return num;
 //     } catch (e) {
-//         console.error("JSON parse error:", e.message);
+//         console.error("Top-level error:", e.message);
+//         return num; // return whatever succeeded
 //     }
 // }
 
-async function walmartproductscraper(url, account) {
-    console.log("Main URL:", url);
-    let num = 0;
-
-    try {
-        // const client = new ZenRows(apikey);
-        // const request = await client.get(url, {
-        //     premium_proxy: true,
-        //     js_render: true,
-        // });
-        // const html = await request.text();
-        // const $ = cheerio.load(html);
-        //  let response = await axios({
-        //             url: 'https://api.zenrows.com/v1/',
-        //             method: 'GET',
-        //             params: {
-        //                 'url': url,
-        //                 'apikey': apikey,
-        //                 'js_render': true,
-        //                 'premium_proxy': true
-        //             },
-        //         });
 
 
-    //    axios.get('https://ecommerce.api.zenrows.com/v1/targets/walmart/discovery/', {
-    //         params: {
-    //             apikey,
-    //             url,
-    //         },
-    //     }) .then((response) => console.log(response.data))
-    // .catch((error) => console.log(error));
-(async () => {
-  const browser = await puppeteer.connect({ browserWSEndpoint: connectionURL });
-  const page = await browser.newPage();
-  
-  await page.goto(url, { waitUntil: 'networkidle2' }); // ensures page fully loads
-  
-  const html = await page.content(); // get full HTML of the loaded page
- const $ = cheerio.load(html);
+async function scrapeProductFromUrl(url, browser, extractVariants = false, prefix = 'RC-R3') {
+    console.log(url)
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: 'networkidle2' });
+    const html = await page.content();
+    const $ = cheerio.load(html);
 
-   let linkContent = $('script[data-seo-id="schema-org-product"]').html()?.trim();
-        let parseData = [];
+    let variantUrls = [];
 
-        if (linkContent) {
+    if (extractVariants) {
+        const schemaScript = $('script[data-seo-id="schema-org-product"]').html()?.trim();
+        if (schemaScript) {
             try {
-                parseData = JSON.parse(linkContent);
-            } catch (e) {
-                console.error("Invalid JSON in schema-org-product:", e.message);
+                const parsed = JSON.parse(schemaScript);
+                const variants = parsed?.[0]?.hasVariant || [];
+                variants.shift(); // Remove self
+                variantUrls = variants.map(v => v.url);
+            } catch (err) {
+                console.error("Schema JSON parse error:", err.message);
             }
         }
+    }
 
-        let linkstack = [];
-        if (Array.isArray(parseData)) {
-            let variants = parseData[0]?.hasVariant || [];
-            variants.shift(); // Remove self if present
-            linkstack = variants.map((c) => c.url);
-        }
-        console.log(linkstack.length)
+    const nextDataScript = $('script#__NEXT_DATA__').html()?.trim();
+    const jsonData = JSON.parse(nextDataScript);
+    const data = jsonData?.props?.pageProps?.initialData?.data?.product;
 
-        // ------- Fetch parent product details -------
-        const scriptContent = $('script#__NEXT_DATA__').html()?.trim();
-        const jsonData = JSON.parse(scriptContent);
-        const data = jsonData.props?.pageProps?.initialData?.data?.product;
+    if (!data) throw new Error("Main product data not found");
 
-        if (!data) throw new Error("Main product data not found");
+    const islowquantity = data?.badges?.groups?.[0]?.members?.[0]?.badgeContent?.[0]?.value?.split(' ')[1] || '0';
+    const color = data.selectedVariantIds?.[0]?.replace('actual_color-', '') || '';
+    const size = data.selectedVariantIds?.[1]?.replace('size-', '') || '';
 
-        let islowquantity = '';
-        if (Array.isArray(data?.badges?.groups) && data?.badges?.groups.length > 0) {
-            islowquantity = data.badges.groups[0].members[0].badgeContent[0].value.split(' ')[1];
-        }
+    const product = {
+        brand: data?.brand?.toLowerCase(),
+        productid: data?.id,
+        upc: data?.upc,
+        sku: generatesku(data.upc, prefix, color, size),
+        price: data?.conditionOffers?.[0]?.price?.price,
+        available: data?.availabilityStatus,
+        quantity: Number(islowquantity),
+        belkTitle: data?.name,
+        url: 'https://www.walmart.com' + data?.canonicalUrl,
+        type: data?.type,
+        color,
+        size,
+        imgurl: data?.variantsMap?.[data.id]?.imageInfo?.allImages?.[0]?.url
+    };
 
-        let color = data.selectedVariantIds?.[0]?.replace('actual_color-', '') || '';
-        let size = data.selectedVariantIds?.[1]?.replace('size-', '') || '';
-        let prefix = 'RC-R3';
+    await page.close();
 
-        const product = {
-            brand: data?.brand?.toLowerCase(),
-            productid: data?.id,
-            upc: data?.upc,
-            sku: generatesku(data.upc, prefix, color, size),
-            price: data?.conditionOffers?.[0]?.price?.price,
-            available: data?.availabilityStatus,
-            quantity: Number(islowquantity),
-            belkTitle: data?.name,
-            url: 'https://www.walmart.com' + data?.canonicalUrl,
-            type: data?.type,
-            color,
-            size,
-            imgurl: data?.variantsMap?.[data.id]?.imageInfo?.allImages?.[0]?.url
-        };
+    return { product, variantUrls };
+}
+
+async function walmartproductscraper(url, account) {
+    console.log("Main URL:", url);
+    let numSaved = 0;
+
+    try {
+        const browser = await puppeteer.connect({ browserWSEndpoint: connectionURL });
+
+        // Scrape parent product and extract variant URLs
+        const { product: parentProduct, variantUrls } = await scrapeProductFromUrl(url, browser, true);
 
         try {
-            const newProduct = new Product(product);
-            const resp = await newProduct.save();
-            console.log(resp)
-            if (resp) num += 1;
+            const saved = await new Product(parentProduct).save();
+            if (saved) numSaved += 1;
         } catch (e) {
             console.error("Failed to save parent product:", e.message);
         }
 
-  await browser.close();
-})();
-let response ='abc'
-        const html = response.data;
-        const $ = cheerio.load(html);
-        console.log('got html')
-
-        // ----- Fetch child variant links from schema.org -----
-      
-        // ------- Loop through child variant URLs with retry -------
-        for (let childUrl of linkstack) {
+        // Process child variants (no need to extract variant URLs again)
+        for (let variantPath of variantUrls) {
+            const variantUrl = variantPath;
+            let attempts = 0;
             let success = false;
-            let attempt = 0;
 
-            while (!success && attempt < 2) {
+            while (!success && attempts < 2) {
                 try {
-                    console.log(`Processing child URL (attempt ${attempt + 1}): ${childUrl}`);
-                    // const request = await client.get(childUrl, {
-                    //     premium_proxy: true,
-                    //     js_render: true,
-                    // });
-                    //  let response = await axios({
-                    //             url: 'https://api.zenrows.com/v1/',
-                    //             method: 'GET',
-                    //             params: {
-                    //                 'url': url,
-                    //                 'apikey': apikey,
-                    //                 'js_render': true,
-                    //                 'premium_proxy': true
-                    //             },
-                    //         });
-
-                    let response =await axios.get('https://ecommerce.api.zenrows.com/v1/targets/walmart/products/', {
-                        params: {
-                            apikey,
-                            url,
-                        },
-                    })
-
-                    const html = response.data;
-                    const $ = cheerio.load(html);
-                    // const html = await request.text();
-                    // const $ = cheerio.load(html);
-
-                    const scriptContent = $('script#__NEXT_DATA__').html()?.trim();
-                    const jsonData = JSON.parse(scriptContent);
-                    const data = jsonData.props?.pageProps?.initialData?.data?.product;
-
-                    if (!data) throw new Error("Child product data missing");
-
-                    let islowquantity2 = '';
-                    if (Array.isArray(data?.badges?.groups) && data?.badges?.groups.length > 0) {
-                        islowquantity2 = data.badges.groups[0].members[0].badgeContent[0].value.split(' ')[1];
-                    }
-
-                    let color2 = data.selectedVariantIds?.[0]?.replace('actual_color-', '') || '';
-                    let size2 = data.selectedVariantIds?.[1]?.replace('size-', '') || '';
-
-                    const product = {
-                        brand: data?.brand?.toLowerCase(),
-                        productid: data?.id,
-                        upc: data?.upc,
-                        sku: generatesku(data.upc, prefix, color2, size2),
-                        price: data?.conditionOffers?.[0]?.price?.price,
-                        available: data?.availabilityStatus,
-                        quantity: Number(islowquantity2),
-                        belkTitle: data?.name,
-                        url: 'https://www.walmart.com' + data?.canonicalUrl,
-                        type: data?.type,
-                        color: color2,
-                        size: size2,
-                        imgurl: data?.variantsMap?.[data.id]?.imageInfo?.allImages?.[0]?.url
-                    };
-
-                    const newProduct = new Product(product);
-                    const resp = await newProduct.save();
-                    if (resp) num += 1;
-                    console.log("Saved product count:", num);
+                    const { product: variantProduct } = await scrapeProductFromUrl(variantUrl, browser, false);
+                    const saved = await new Product(variantProduct).save();
+                    if (saved) numSaved += 1;
                     success = true;
-                } catch (childErr) {
-                    console.error(`Error (attempt ${attempt + 1}) for ${childUrl}:`, childErr);
-                    attempt += 1;
+                } catch (err) {
+                    console.error(`Variant error (attempt ${attempts + 1}): ${variantUrl}`, err.message);
+                    attempts++;
                 }
             }
 
             if (!success) {
-                console.warn(`Failed to process child URL after retrying: ${childUrl}`);
+                console.warn("Failed to process after retries:", variantUrl);
             }
         }
 
-        console.log("Total products saved:", num);
-        return num;
+        await browser.close();
+        console.log("Total products saved:", numSaved);
+        return numSaved;
     } catch (e) {
         console.error("Top-level error:", e.message);
-        return num; // return whatever succeeded
+        return numSaved;
     }
 }
+
 
 
 module.exports = { walmartproductscraper }
