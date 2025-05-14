@@ -2,7 +2,7 @@ const mongoose= require('mongoose')
 
 const brandProductUrlSchema = new mongoose.Schema({
    producturl:{ type: [String], default: [] },
-   email:String,
+   vendor:String,
    account:String,
    brand:String,
    Date: {

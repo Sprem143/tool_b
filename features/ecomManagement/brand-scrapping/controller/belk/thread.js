@@ -2,6 +2,7 @@
 require('dotenv').config();
 const BrandUrl = require('../../model/brandurl');
 const { getupc, boscovbrandscraper } = require('./util')
+const {walmartproductscraper}= require('../walmart/util')
 
 exports.thread1 = async (req, res) => {
     try {
@@ -19,7 +20,24 @@ exports.thread1 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        }
+// ----------walmart scrappint--------
+        else if(url.includes('https://www.walmart.com')){
+          let ans = await walmartproductscraper(url, account)
+          console.log(ans)
+         if (ans>0) {
+                // await BrandUrl.updateOne(
+                //     { account:account, vendor:'walmart' },
+                //     { $pull: { producturl: url } }
+                // )
+                // res.status(200).json({ status: true, msg: ans })
+            } else {
+                // res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+         else {
             let result = await getupc(url, account);
             result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
         }
@@ -46,7 +64,14 @@ exports.thread2 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+
+            // ---------------handle walmart scraping-----------
+        }else if(url.includes('https://www.walmart.com')){
+          let ans = await walmartproductscraper(url, account)
+          console.log(ans)
+        }
+        
+        else {
             let result = await getupc(url, account);
             result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
         }

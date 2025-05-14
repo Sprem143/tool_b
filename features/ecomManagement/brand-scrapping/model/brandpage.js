@@ -4,8 +4,9 @@ const brandUrlSchema = new mongoose.Schema({
    url:{
     type: [String],
    },
-   email:String,
-   account:String
+   account:String,
+   vendor:String,
+   brand:String
 
 },{timestamps:true});
 

@@ -1,4 +1,3 @@
-const mongoose = require('mongoose')
 const ProductBackup = require('../../model/productBackup')
 require('dotenv').config();
 const apikey = process.env.API_KEY
@@ -10,15 +9,14 @@ const Product = require('../../model/products');
 const finalProduct = require('../../model/finalProduct');
 const Scrappedbrand = require('../../model/scrappedbrand')
 const xlsx = require('xlsx')
-
 const { ZenRows } = require("zenrows");
 
 
-const checkifbrandalreadyscrap = async (brandname,vendor) => {
+const checkifbrandalreadyscrap = async (brandname, vendor) => {
     let brandwords = brandname?.split(' ').filter(Boolean);
     brandwords = brandwords.map(word => word.toLowerCase());
 
-    let listedbrand = await Scrappedbrand.find({vendor:vendor}, { brandurl: 1, _id: 0 });
+    let listedbrand = await Scrappedbrand.find({ vendor: vendor }, { brandurl: 1, _id: 0 });
     console.log(listedbrand)
     listedbrand = listedbrand.map(b => b.brandurl);
     for (let i of listedbrand) {
@@ -46,7 +44,7 @@ const generateurl = async (num, url, account) => {
             index++
         }
         if (urllist.length > 0) {
-            const pages = new BrandPage({ url: urllist, account: account });
+            const pages = new BrandPage({ url: urllist, account: account, vendor: 'belk' });
             await pages.save();
             return true;
         } else {
@@ -189,41 +187,38 @@ async function fetchProductData(html) {
 }
 
 
-const generatesku = (upc, color, size) => {
-    if (color && size) {
-        let a = size.split(' ');
-        if (a[1] && a[1].length > 1) {
-            a[1] = a[1].slice(0, 1)
-        }
-        a = a.join('');
-        size = a
-        color = color.replaceAll(' ', '-').replaceAll('/', '-').toUpperCase();
-        let firstletter = color.charAt(0)
-        color = color.slice(1)
-        var modifiedColor = color
-        if (color.length > 12) {
-            let v = ['A', 'E', 'I', 'O', 'U'];
-            for (let i of v) {
-                modifiedColor = color.replaceAll(i, '');
-                color = modifiedColor
-            }
-        }
-        if (color.length > 12) {
-            let arr = color.split('-');
-            for (let i = 0; i < arr.length; i++) {
-                arr[i] = arr[i].slice(0, 3)
-            }
-            color = arr.join('-')
-        }
-        let sku = 'RC-R1-' + upc + '-' + firstletter + color + '-' + size
-        sku.replace('---', '-')
-        sku.replace('--', '-')
-        return sku;
-    } else {
-        return null
+const generatesku = (upc, prefix, color = '', size = '') => {
+    let a = size.split(' ');
+    if (a[1] && a[1].length > 1) {
+        a[1] = a[1].slice(0, 1)
     }
-}
+    a = a.join('');
+    size = a
+    color = color.replaceAll(' ', '-').replaceAll('/', '-').toUpperCase();
+    let firstletter = color.charAt(0)
+    color = color.slice(1)
+    var modifiedColor = color
+    if (color.length > 12) {
+        let v = ['A', 'E', 'I', 'O', 'U'];
+        for (let i of v) {
+            modifiedColor = color.replaceAll(i, '');
+            color = modifiedColor
+        }
+    }
+    if (color.length > 12) {
+        let arr = color.split('-');
+        for (let i = 0; i < arr.length; i++) {
+            arr[i] = arr[i].slice(0, 3)
+        }
+        color = arr.join('-')
+    }
 
+    let sku = prefix + '-' + upc + '-' + firstletter + color + '-' + size
+    sku = sku.replaceAll('---', '-')
+    sku = sku.replaceAll('--', '-')
+    sku = sku.replaceAll(',', '')
+    return sku;
+}
 
 const getupc = async (url, account) => {
     try {
@@ -256,6 +251,8 @@ const getupc = async (url, account) => {
 
         const data = await fetchAndExtractVariable(html, 'utag_data');
         if (data && color_size) {
+            let prefix = account == 'rcube' ? 'RC-R1' : account == 'om' ? 'OM-O1' : account == 'bijak' ? 'BJ-S1' : account == 'zenith' ? ZL - L1 : 'AB-C1'
+
             const name = data.product_name[0];
             const upc = data.sku_upc;
             const id = data.sku_id;
@@ -268,6 +265,7 @@ const getupc = async (url, account) => {
             const coupon = data.product_promotedCoupon[0].cpnDiscount !== undefined ? data.product_promotedCoupon[0].cpnDiscount : null;
             let products = upc.map((u, index) => ({
                 account: account,
+                 vendor:'belk',
                 name: name,
                 upc: u,
                 price: Number(data.product_promotedCoupon[0].cpnDiscount) > 0 && Boolean(onsale[index]) === false ? price[index] * (1 - (coupon / 100)) : price[index],
@@ -275,11 +273,12 @@ const getupc = async (url, account) => {
                 productid: id[index],
                 color: color_size[id[index]] ? color_size[id[index]].color : null,
                 size: color_size[id[index]] ? color_size[id[index]].size : null,
-                sku: generatesku(u, color_size[id[index]] ? color_size[id[index]].color : null, color_size[id[index]] ? color_size[id[index]].size : null,),
+                sku: generatesku(u, prefix, color_size[id[index]] ? color_size[id[index]].color : null, color_size[id[index]] ? color_size[id[index]].size : null, 'belk'),
                 url: url,
                 imgurl: imgurl[index],
-                Brand:Brand,
-                belkTitle:belkTitle
+                Brand: Brand,
+                belkTitle: belkTitle,
+               
             }));
             // ---------removing out of stock products----------
             const filterProduct = products.filter((p) => p.quantity > 2);
@@ -377,17 +376,20 @@ const boscovbrandscraper = async (url, account) => {
             arr = arr.filter((a, i, self) => self.indexOf(a) == i)
             const img = productData.img
 
+            let prefix = account == 'rcube' ? 'RC-R2' : account == 'om' ? 'OM-O2' : account == 'bijak' ? 'BJ-S7' : account == 'zenith' ? ZL - L3 : 'AB-C1'
+
             let products = productData.variations.map((p) => ({
-                account:account,
+                account: account,
                 upc: p.upc,
                 price: price,
-                sku: generatesku(p.upc, p.options[0]?.value, p.options[1]?.value),
+                sku: generatesku(p.upc, prefix, p.options[0]?.value, p.options[1]?.value, 'boscovs'),
                 pricerange: arr,
                 quantity: p.inventoryInfo.onlineStockAvailable,
                 color: p.options[0]?.value,
                 size: p.options[1]?.value,
                 imgurl: img,
-                url: url
+                url: url,
+                vendor:'boscovs'
             }))
             await Product.insertMany(products)
             return true;
@@ -399,4 +401,4 @@ const boscovbrandscraper = async (url, account) => {
         return false
     }
 }
-module.exports = {calculateshippingcost, boscovbrandscraper, checkifbrandalreadyscrap, getupc, generateurl, insertInChunks, scrapfirstpage, handleSecondPageScraping }
+module.exports = { calculateshippingcost, boscovbrandscraper, checkifbrandalreadyscrap, getupc, generateurl, insertInChunks, scrapfirstpage, handleSecondPageScraping }

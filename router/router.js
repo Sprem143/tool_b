@@ -10,18 +10,22 @@ const BelkRouter = require('../features/ecomManagement/brand-scrapping/router/be
 const BoscovRouter = require('../features/ecomManagement/brand-scrapping/router/boscov_router')
 const Brand_common_router = require('../features/ecomManagement/brand-scrapping/router/common')
 const Inventory_router = require('../features/ecomManagement/inventory/router')
-const Name_Router = require('../namescrap/router')
-
+const AcademyRouter = require('../features/ecomManagement/brand-scrapping/router/academy_router')
+const WalmartRouter = require('../features/ecomManagement/brand-scrapping/router/walmart_router')
 
 router.use('/om/employee',omEmployeeRouter);
 router.use('/om/data',omDataRouter)
 router.use('/om/admin',AdminRouter)
 router.use('/upload',CloudinaryRouter)
 router.use('/api/google', GoogleRouter)
+
+
 router.use('/scrap/belk', BelkRouter)
 router.use('/scrap/boscovs', BoscovRouter)
+router.use('/scrap/academy', AcademyRouter)
+router.use('/scrap/walmart', WalmartRouter)
+
 router.use('/brand',Brand_common_router)
 router.use('/inv',Inventory_router)
-router.use('/name', Name_Router)
 
 module.exports= router

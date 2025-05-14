@@ -26,7 +26,7 @@ exports.fetchurl = async (req, res) => {
         let result = extractProductUrls(html)
         if (Array.isArray(result) && result.length > 0) {
             let producturl = result.map((r) => 'https://www.boscovs.com' + r);
-            let prev = await BrandUrl.find({ account: account });
+            let prev = await BrandUrl.find({ account: account, vendor:'boscovs' });
             if (prev.length > 0) {
                 let prevarr = prev[0].producturl;
                 producturl.push(prevarr)
@@ -72,7 +72,7 @@ exports.fetchurl = async (req, res) => {
 exports.deleteoldurls = async (req, res) => {
     try {
         const account = req.body.account
-        let urls = await BrandUrl.deleteMany({ account: account });
+        let urls = await BrandUrl.deleteMany({ account: account, vendor:'boscovs' });
         let products = await Product.deleteMany({ account: account })
         await FinalProduct.deleteMany()
 
@@ -86,9 +86,9 @@ exports.deleteoldurls = async (req, res) => {
 exports.currentdetails = async (req, res) => {
     try {
         const account = req.body.account
-        let totalurl = await BrandUrl.findOne({ account: account})
+        let totalurl = await BrandUrl.findOne({ account: account, vendor:'boscovs'})
         let totalurlnum = totalurl?.producturl.length || 0
-        let fetchedproduct = await Product.countDocuments({ account: account })
+        let fetchedproduct = await Product.countDocuments({ account: account, vendor:'boscovs' })
         console.log(fetchedproduct, totalurlnum)
         if (totalurl) {
             res.status(200).json({ status: true, url: totalurlnum, fetched: fetchedproduct, link: totalurl.producturl })

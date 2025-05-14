@@ -14,7 +14,10 @@ const dataSchema = new mongoose.Schema({
     imgurl: String,
     url: String,
     Brand:String,
-    belkTitle:String
+    belkTitle:String,
+    productid:String,
+    available:String,
+    producttype:String
 });
 
 module.exports = mongoose.model('Product', dataSchema);

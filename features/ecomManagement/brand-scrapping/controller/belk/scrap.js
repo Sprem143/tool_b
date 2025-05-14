@@ -13,7 +13,6 @@ const xlsx = require('xlsx')
 const { JSDOM } = require("jsdom");
 
 const { checkifbrandalreadyscrap, generateurl, insertInChunks, scrapfirstpage, handleSecondPageScraping } = require('./util');
-const brandurl = require('../../model/brandurl');
 
 
 exports.fetchbrand = async (req, res) => {
@@ -37,7 +36,7 @@ exports.fetchbrand = async (req, res) => {
 
             await Promise.all([
                 BrandPage.deleteMany({ account: account }),
-                BrandUrl.deleteMany({ account: account }),
+                BrandUrl.deleteMany({ account: account, vendor:'belk' }),
                 Product.deleteMany({ account: account })
             ])
 
@@ -46,14 +45,14 @@ exports.fetchbrand = async (req, res) => {
             let productUrls = await scrapfirstpage(url)
             if (productUrls.length > 0) {
                 const productarr = productUrls.map(p => 'https://www.belk.com' + p);
-                const products = new BrandUrl({ producturl: productarr, account: account, brand: 'belk' });
+                const products = new BrandUrl({ producturl: productarr, account: account, vendor: 'belk' });
                 await products.save();
                 if (num <= 60) {
-                    let count = await BrandUrl.find()
+                    let count = await BrandUrl.find({vendor:'belk'})
                     count = count[0]?.producturl.length
-                    let data = new Scrappedbrand({ name: profile.name, email: profile.email, brandname: brandname, brandurl: url, urls: count, })
+                    let data = new Scrappedbrand({ name: profile.name, email: profile.email, brandname: brandname, brandurl: url, urls: count,vendor:'belk' })
                     await data.save();
-                    let links = await brandurl.findOne({ account: account })
+                    let links = await BrandUrl.findOne({ account: account, vendor:'belk' })
                     let urls = links ? links.producturl : []
                     return res.status(200).json({ status: true, url: urls, msg: "All pages's urls fetched successfully" })
                 }
@@ -62,7 +61,7 @@ exports.fetchbrand = async (req, res) => {
                     const secondurl = pages[0].url;
                     let resp = await handleSecondPageScraping(secondurl);
                     if (resp) {
-                        let count = await BrandUrl.find()
+                        let count = await BrandUrl.find({vendor:'belk'})
                         count = count[0]?.producturl.length
                         let data = new Scrappedbrand({ name: profile.name, email: profile.email, account: profile.account, brandname: brandname, brandurl: url, urls: count, })
                         await data.save();
@@ -70,7 +69,7 @@ exports.fetchbrand = async (req, res) => {
                         res.status(500).json({ status: false, msg: "Error while second page scrapping. Refresh if url successfully fetched. if total url is not fetched then retry again." })
                     }
                 }
-                let links = await brandurl.findOne({ account: account })
+                let links = await BrandUrl.findOne({ account: account, vendor:'belk' })
                 let urls = links ? links.producturl : []
                 res.status(200).json({ status: true, url: urls, msg: "All pages's urls fetched successfully" })
             } else res.status(404).json({ status: false, msg: "No url fetched or found. Please retry" })
@@ -87,7 +86,7 @@ exports.refreshdetails = async (req, res) => {
         let pages = await BrandPage.findOne({ account: account })
         pages = pages?.url.length;
 
-        let urls = await BrandUrl.findOne({ account: account })
+        let urls = await BrandUrl.findOne({ account: account , vendor:'belk'})
         urls = urls?.producturl.length
         res.status(200).json({ status: true, page: pages, url: urls })
     } catch (err) {
@@ -100,7 +99,7 @@ exports.currentdetails = async (req, res) => {
     try {
         const account = req.body.account
         console.log
-        let totalurl = await BrandUrl.findOne({ account: account })
+        let totalurl = await BrandUrl.findOne({ account: account,vendor:'belk' })
         let totalurlnum = totalurl?.producturl.length || 0
         let fetchedproduct = await Product.countDocuments({ account: account })
         if (totalurl) {
@@ -118,7 +117,7 @@ exports.deleteurl = async (req, res) => {
     try {
         const { account, url } = req.body
         let resp = await BrandUrl.findOneAndUpdate(
-            { account: account },
+            { account: account, vendor:'belk' },
             { $pull: { producturl: url } },
             { new: true }
         )
@@ -176,7 +175,7 @@ exports.removeexistingurl = async (req, res) => {
 
 exports.getproduct = async (req, res) => {
     try {
-        const urlarray = await BrandUrl.find({});
+        const urlarray = await BrandUrl.find({vendor:'belk'});
         let arrayid = urlarray[0]._id
         const urls = urlarray[0].producturl;
         for (let index = 0; index < urls.length;) {
@@ -287,7 +286,7 @@ exports.fetchurl = async (req, res) => {
                     let data = new Scrappedbrand({ name: profile.name, email: profile.email, brandname: brandname, brandurl: producturl[0], vendor: 'belk' })
                     let saved = await data.save();
                     console.log(saved)
-                    let newurllist = new BrandUrl({ producturl: producturl, account: account, brand: 'belk' })
+                    let newurllist = new BrandUrl({ producturl: producturl, account: account, vendor: 'belk' })
                     let resp = await newurllist.save();
                     res.status(200).json({ status: true, url: resp.producturl.length, fetched: 0, link: resp.producturl })
                 }
