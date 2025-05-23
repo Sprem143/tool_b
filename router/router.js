@@ -12,6 +12,7 @@ const Brand_common_router = require('../features/ecomManagement/brand-scrapping/
 const Inventory_router = require('../features/ecomManagement/inventory/router')
 const AcademyRouter = require('../features/ecomManagement/brand-scrapping/router/academy_router')
 const WalmartRouter = require('../features/ecomManagement/brand-scrapping/router/walmart_router')
+const ShortCutRouter = require('../features/shortcut/router')
 
 router.use('/om/employee',omEmployeeRouter);
 router.use('/om/data',omDataRouter)
@@ -27,5 +28,6 @@ router.use('/scrap/walmart', WalmartRouter)
 
 router.use('/brand',Brand_common_router)
 router.use('/inv',Inventory_router)
+router.use('/shortcut',ShortCutRouter)
 
 module.exports= router

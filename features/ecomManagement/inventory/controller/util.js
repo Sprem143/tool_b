@@ -9,8 +9,10 @@ const Todayupdate = require('../model/todayupdate');
 const cheerio = require('cheerio');
 const Product = require('../../brand-scrapping/model/products')
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-
+const connectionURL = `wss://browser.zenrows.com?apikey=${apikey}`;
+const puppeteer = require('puppeteer-core');
+const { JSDOM } = require("jsdom");
+const outofstock = require('../model/outofstock');
 async function belk_productData(html, variableName) {
     const $ = cheerio.load(html);
     let variableValue;
@@ -166,7 +168,7 @@ const boscov = async (url, account) => {
                                 'PriceRange': arr,
                                 'Image link': '',
                                 color: p.color,
-                                'Input UPC':'UPC'+ p.upc,
+                                'Input UPC': 'UPC' + p.upc,
                                 'Fulfillment': data['Fulfillment'],
                                 'Amazon Fees%': data['Amazon Fees%'],
                                 'Amazon link': data['Amazon link'],
@@ -413,8 +415,8 @@ async function belk(url, account) {
                     'Min Profit': data['Min Profit'],
                     ASIN: data.ASIN,
                     SKU: data.SKU,
-                   remark:'Product url not exist',
-                   vendor:'belk'
+                    remark: 'Product url not exist',
+                    vendor: 'belk'
                 })
             }
             await AutoFetchData.insertMany(productlist);
@@ -533,8 +535,8 @@ const countDays = (date) => {
     return Math.floor(diff / (1000 * 60 * 60 * 24)); // Convert to days
 };
 
-async function academy(url, account){
-   console.log(url)
+async function academy(url, account) {
+    console.log(url)
     const client = new ZenRows(apikey);
     let request = await client.get(url, {
         premium_proxy: true,
@@ -566,8 +568,8 @@ async function academy(url, account){
                     'Min Profit': data['Min Profit'],
                     ASIN: data.ASIN,
                     SKU: data.SKU,
-                   remark:'Product url not exist',
-                   vendor:'academy'
+                    remark: 'Product url not exist',
+                    vendor: 'academy'
                 })
             }
             await AutoFetchData.insertMany(productlist);
@@ -576,70 +578,287 @@ async function academy(url, account){
         }
     }
     var html = await request.text();
-  let productData= await academy_extractProductData(html,url, account)
+    let productData = await academy_extractProductData(html, url, account)
 }
 
-async function academy_extractProductData(html,url, account){
-       let key ='comp-blt51a442da3d780eaa'
-      const pattern = new RegExp(`window\\.ASOData\\[['"]${key}['"]\\]\\s*=\\s*{`);
-      const startMatch = html.match(pattern);
-    
-      if (!startMatch) {
+async function academy_extractProductData(html, url, account) {
+    let key = 'comp-blt51a442da3d780eaa'
+    const pattern = new RegExp(`window\\.ASOData\\[['"]${key}['"]\\]\\s*=\\s*{`);
+    const startMatch = html.match(pattern);
+
+    if (!startMatch) {
         console.log('Key not found');
         return null;
-      }
-    
-      const startIndex = html.indexOf(startMatch[0]);
-      let i = html.indexOf('{', startIndex);
-      let braceCount = 0;
-      let endIndex = i;
-    
-      while (i < html.length) {
+    }
+
+    const startIndex = html.indexOf(startMatch[0]);
+    let i = html.indexOf('{', startIndex);
+    let braceCount = 0;
+    let endIndex = i;
+
+    while (i < html.length) {
         if (html[i] === '{') braceCount++;
         else if (html[i] === '}') braceCount--;
-    
+
         if (braceCount === 0) {
-          endIndex = i + 1;
-          break;
+            endIndex = i + 1;
+            break;
         }
         i++;
-      }
-    
-      const objectString = html.slice(html.indexOf('{', startIndex), endIndex);
-    
-      try {
-        let productData =JSON.parse(objectString);
+    }
+
+    const objectString = html.slice(html.indexOf('{', startIndex), endIndex);
+
+    try {
+        let productData = JSON.parse(objectString);
         let productArr = productData['api']['product-info']['productinfo']['sKUs']
-        let inventoryArr =productData['api']['inventory']['online']
+        let inventoryArr = productData['api']['inventory']['online']
 
         const inventoryMap = inventoryArr.reduce((acc, i) => {
             if (i?.skuId) {
-              acc[i.skuId] = i.availableQuantity ?? 0;
+                acc[i.skuId] = i.availableQuantity ?? 0;
             }
             return acc;
-          }, {});
+        }, {});
 
 
-        productArr = productArr.map((p)=>({
-            account:account,
-            upc:p?.descriptiveAttributes.UPCcode[0],
+        productArr = productArr.map((p) => ({
+            account: account,
+            upc: p?.descriptiveAttributes.UPCcode[0],
             price: p?.price.salePrice,
             size: p?.descriptiveAttributes.Size,
             color: p?.descriptiveAttributes.Color,
             img: p?.imageURL,
             itemId: p?.skuId,
-            title:p.name,
+            title: p.name,
             quantity: inventoryMap[p?.skuId] || 0,
-            vendor:'academy',
-            url:url,
+            vendor: 'academy',
+            url: url,
             Brand: p['facet_Brands']
         }))
-     console.log(productArr)
+        console.log(productArr)
         return productArr
-      } catch (err) {
+    } catch (err) {
         console.error('JSON parsing error:', err.message);
         return null;
-      }
+    }
 }
 
-module.exports = {academy, handleoutofstock, belk, saveData, boscovbrandscraper, boscov, fetchProductData, countDays }
+// -------------walmart inventory updation--------
+// async function walmart(url, account) {
+//     // url = 'https://www.walmart.com/search?q=5253261159'
+//     console.log(url, account)
+//     let url = url;
+//     url= url.split('/')[5]
+//     url = 'https://www.walmart.com/search?q='+url
+//     if (url) {
+//         let browser = await puppeteer.connect({ browserWSEndpoint: connectionURL });
+//         console.log(url)
+//         const page = await browser.newPage();
+//         await page.goto(url, { waitUntil: 'networkidle2', timeout: 90000 });
+//         const html = await page.content();
+//         console.log('html receive')
+//         const $ = cheerio.load(html);
+//         await page.close()
+//         const nextDataScript = $('script#__NEXT_DATA__').html()?.trim();
+//         const jsonData = JSON.parse(nextDataScript);
+//         const data = jsonData?.props?.pageProps?.initialData?.searchResult?.itemStacks[0]?.items
+//         if (!data) {
+//             console.log('Product data not found')
+//             return false
+//         }
+//         let products = await InvProduct.findOne({ 'Product link': url })
+//         // -------handle out of stock products---
+//         if (Array.isArray(data) && data.length == 0) {
+//             let oosp = await Outofstock.findOne({ 'Product link': url })
+//             let updatedproduct = {
+//                 account: account,
+//                 'Product link': url,
+//                 'Current Quantity': 10,
+//                 'Product price': products['Product price'] || 0,
+//                 'Current Price': 0,
+//                 'Input UPC': products['Input UPC'] || '',
+//                 'Fulfillment': products['Fulfillment'] || '',
+//                 'Amazon Fees%': products['Amazon Fees%'] || '',
+//                 'Amazon link': products['Amazon link'],
+//                 'Shipping Template': products['Shipping Template'] || '',
+//                 'Min Profit': products['Min Profit'] || '',
+//                 ASIN: products.ASIN,
+//                 SKU: products.SKU,
+//                 Brand: products['Brand Name'],
+//                 outofstock: oosp?.Data || ''
+//             }
+//             let saveProduct = await new AutoFetchData(updatedproduct).save()
+
+//             if (!oosp) {
+//                 let oosproduct = { ...updatedproduct, outofstock: new Date().toLocaleDateString("en-GB") }
+//                 await new Outofstock(oosproduct).save()
+//             }
+//             return saveProduct ? true : false;
+//         }
+//         // --------handle if product is in stock---------
+//         if (data) {
+//             let groups = data[0].badges.groups
+//             let priceinfo = data[0].priceInfo.linePrice
+//             console.log(groups)
+//             if (Array.isArray(data)) {
+//                 let inventoryinfo = groups.find(g => g.name == 'urgency')
+//                 console.log(products)
+//                 if (inventoryinfo) {
+//                     // -----handle low inventory----------
+//                     let q = inventoryinfo.members[0].text.split(' ')[1]
+//                     let updatedproduct = {
+//                         account: account,
+//                         'Product link': url,
+//                         'Current Quantity': q,
+//                         'Product price': products['Product price'] || 0,
+//                         'Current Price': priceinfo || 0,
+//                         'Input UPC': products['Input UPC'] || '',
+//                         'Fulfillment': products['Fulfillment'] || '',
+//                         'Amazon Fees%': products['Amazon Fees%'] || '',
+//                         'Amazon link': products['Amazon link'],
+//                         'Shipping Template': products['Shipping Template'] || '',
+//                         'Min Profit': products['Min Profit'] || '',
+//                         ASIN: products.ASIN,
+//                         SKU: products.SKU,
+//                         Brand: products['Brand Name'],
+//                     }
+//                     let saveProduct = await new AutoFetchData(updatedproduct).save()
+//                     return saveProduct ? true : false
+
+//                 } else {
+//                     // -----------handle if product quantity if more than 10-
+//                     let updatedproduct = {
+//                         account: account,
+//                         'Product link': url,
+//                         'Current Quantity': 10,
+//                         'Product price': products['Product price'] || 0,
+//                         'Current Price': priceinfo || 0,
+//                         'Input UPC': products['Input UPC'] || '',
+//                         'Fulfillment': products['Fulfillment'] || '',
+//                         'Amazon Fees%': products['Amazon Fees%'] || '',
+//                         'Amazon link': products['Amazon link'],
+//                         'Shipping Template': products['Shipping Template'] || '',
+//                         'Min Profit': products['Min Profit'] || '',
+//                         ASIN: products.ASIN,
+//                         SKU: products.SKU,
+//                         Brand: products['Brand Name'],
+//                     }
+//                     let saveProduct = await new AutoFetchData(updatedproduct).save()
+//                     return saveProduct ? true : false
+//                 }
+//             }
+//             return false
+//         } else {
+//             console.log('Product data not found')
+//         }
+//     } else {
+//         return false;
+//     }
+// }
+
+
+async function walmart(url, account) {
+    let browser;
+    try {
+        if (!url) {
+            console.error('Invalid URL structure');
+            return false;
+        }
+        let originalUrl = url
+        url = url + '?classType=VARIANT&adsRedirect=true'
+        console.log('Received URL:', url, 'Account:', account);
+        // // Connect to browser
+        browser = await puppeteer.connect({ browserWSEndpoint: connectionURL });
+        const page = await browser.newPage();
+
+        // Load page
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 90000 });
+        const html = await page.content();
+        const $ = cheerio.load(html);
+        const nextDataScript = $('script#__NEXT_DATA__').html()?.trim();
+
+        if (!nextDataScript) {
+            console.error('NEXT_DATA script not found');
+            return false;
+        }
+        const jsonData = JSON.parse(nextDataScript);
+        const data = jsonData?.props?.pageProps?.initialData?.data
+        const products = await InvProduct.findOne({ 'Product link': originalUrl });
+        // ----------- Out of stock case ------------
+        if (data == undefined) {
+            console.log('Product appears to be out of stock');
+            const oosp = await Outofstock.findOne({ 'Product link': url });
+            const updatedProduct = {
+                account,
+                'Product link': url,
+                'Current Quantity': 0,
+                'Product price': products?.['Product price'] || 0,
+                'Current Price': 0,
+                'Input UPC': products?.['Input UPC'] || '',
+                'Fulfillment': products?.['Fulfillment'] || '',
+                'Amazon Fees%': products?.['Amazon Fees%'] || '',
+                'Amazon link': products?.['Amazon link'],
+                'Shipping Template': products?.['Shipping Template'] || '',
+                'Min Profit': products?.['Min Profit'] || '',
+                ASIN: products?.ASIN,
+                SKU: products?.SKU,
+                Brand: products?.['Brand Name'],
+                outofstock: oosp?.Date || ''
+            };
+
+            const saveProduct = await new AutoFetchData(updatedProduct).save();
+            await InvProduct.deleteOne({ 'Product link': originalUrl })
+            if (!oosp) {
+                const oosProduct = { ...updatedProduct, outofstock: new Date().toLocaleDateString("en-GB"), vendor: 'walmart' };
+                await new Outofstock(oosProduct).save();
+            }
+
+            return !!saveProduct;
+        }
+
+        // ----------- In-stock case ------------
+        const product = data?.product;
+        const priceInfo = Number(product?.priceInfo?.currentPrice?.price || 0);
+
+
+        let quantity = product?.fulfillmentOptions[0]?.availableQuantity
+
+        const updatedProduct = {
+            account,
+            'Product link': url,
+            'Current Quantity': quantity,
+            'Product price': products?.['Product price'] || 0,
+            'Current Price': priceInfo,
+            'Input UPC': products?.['Input UPC'] || '',
+            'Fulfillment': products?.['Fulfillment'] || '',
+            'Amazon Fees%': products?.['Amazon Fees%'] || '',
+            'Amazon link': products?.['Amazon link'],
+            'Shipping Template': products?.['Shipping Template'] || '',
+            'Min Profit': products?.['Min Profit'] || '',
+            ASIN: products?.ASIN,
+            SKU: products?.SKU,
+            Brand: products?.['Brand Name'],
+        };
+
+        const saveProduct = await new AutoFetchData(updatedProduct).save();
+        await InvProduct.deleteOne({ 'Product link': originalUrl })
+        console.log('saved')
+        return !!saveProduct;
+
+    } catch (err) {
+        console.error('Error in walmart():', err);
+        return false;
+    } finally {
+        if (browser) {
+            try {
+                await browser.close();
+            } catch (closeErr) {
+                console.error('Error closing browser:', closeErr);
+            }
+        }
+    }
+}
+
+
+module.exports = { academy, handleoutofstock, belk, saveData, boscovbrandscraper, boscov, fetchProductData, countDays, walmart }

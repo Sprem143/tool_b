@@ -6,6 +6,7 @@ const dataSchema = new mongoose.Schema({
         type: String
     },
     'Vendor URL': String,
+    vendor:String,
     ASIN: String,
     SKU: String,
     'Product price': Number,

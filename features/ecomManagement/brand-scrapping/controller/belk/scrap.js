@@ -83,7 +83,7 @@ exports.fetchbrand = async (req, res) => {
 exports.refreshdetails = async (req, res) => {
     try {
         const { account } = req.body
-        let pages = await BrandPage.findOne({ account: account })
+        let pages = await BrandPage.findOne({ account: account, vendor:'belk' })
         pages = pages?.url.length;
 
         let urls = await BrandUrl.findOne({ account: account , vendor:'belk'})

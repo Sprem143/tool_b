@@ -21,7 +21,6 @@ exports.saveproduct = async (req, res) => {
 }
 
 exports.getproductlink = async (req, res) => {
-  33
 
   try {
     const { account } = req.body
@@ -311,7 +310,11 @@ exports.uploadinvfile = async (req, res) => {
     const sheet = workbook.Sheets[sheetName];
     let data = xlsx.utils.sheet_to_json(sheet);
     data = data.filter((d) => d['ASIN'] !== undefined && d['Input UPC'] !== undefined);
-    data = data.map((d) => ({ ...d, 'Product link': d['Product link'].split('.html')[0] + '.html', account: account }))
+    if(!data[0]['Product link'].includes('https://www.walmart.com')){
+      data = data.map((d) => ({ ...d, 'Product link': d['Product link'].split('.html')[0] + '.html', account: account }))
+    }else{
+            data = data.map((d) => ({ ...d, account: account }))
+    }
     if (data.length === 0) {
       return res.status(400).json({ msg: 'No valid data to process' });
     }

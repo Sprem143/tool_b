@@ -75,7 +75,7 @@ exports.uploadforcheck = async (req, res) => {
                     'Fulfillment Shipping':calculateshippingcost(r.Title) || 0,
                     'Available Quantity': product?.quantity,
                     'Img link': product?.imgurl,
-                    'Product price': Number(Number(product?.price).toFixed(1)),
+                    'Product price':product?.price? Number(Number(product?.price).toFixed(1)):0,
                     Size:product?.size,
                     Color: product?.color,
                     belkTitle:product?.belkTitle ||'',

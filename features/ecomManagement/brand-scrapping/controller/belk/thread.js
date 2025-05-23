@@ -2,7 +2,7 @@
 require('dotenv').config();
 const BrandUrl = require('../../model/brandurl');
 const { getupc, boscovbrandscraper } = require('./util')
-const {walmartproductscraper}= require('../walmart/util')
+const { walmartproductscraper } = require('../walmart/util')
 
 exports.thread1 = async (req, res) => {
     try {
@@ -12,7 +12,7 @@ exports.thread1 = async (req, res) => {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -21,25 +21,24 @@ exports.thread1 = async (req, res) => {
                 console.log("UPC data not found or error occurred for:", url);
             }
         }
-// ----------walmart scrappint--------
-        else if(url.includes('https://www.walmart.com')){
-          let ans = await walmartproductscraper(url, account)
-          console.log(ans)
-         if (ans>0) {
-                // await BrandUrl.updateOne(
-                //     { account:account, vendor:'walmart' },
-                //     { $pull: { producturl: url } }
-                // )
-                // res.status(200).json({ status: true, msg: ans })
+        // ----------walmart scrappint--------
+        else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
             } else {
-                // res.status(200).json({ status: false })
+                res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
         }
 
-         else {
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -51,12 +50,12 @@ exports.thread2 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -66,14 +65,24 @@ exports.thread2 = async (req, res) => {
             }
 
             // ---------------handle walmart scraping-----------
-        }else if(url.includes('https://www.walmart.com')){
-          let ans = await walmartproductscraper(url, account)
-          console.log(ans)
         }
-        
+        else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
         else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -89,7 +98,7 @@ exports.thread3 = async (req, res) => {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -97,9 +106,23 @@ exports.thread3 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -111,12 +134,12 @@ exports.thread4 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -124,9 +147,23 @@ exports.thread4 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -138,12 +175,12 @@ exports.thread5 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -151,9 +188,23 @@ exports.thread5 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -165,12 +216,12 @@ exports.thread6 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -178,9 +229,20 @@ exports.thread6 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+               
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -192,12 +254,12 @@ exports.thread7 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -205,9 +267,23 @@ exports.thread7 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -218,12 +294,12 @@ exports.thread8 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -231,9 +307,23 @@ exports.thread8 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -245,12 +335,12 @@ exports.thread9 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -258,9 +348,23 @@ exports.thread9 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -272,12 +376,12 @@ exports.thread10 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -285,9 +389,23 @@ exports.thread10 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -299,12 +417,12 @@ exports.thread11 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -312,9 +430,23 @@ exports.thread11 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -326,12 +458,12 @@ exports.thread12 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -339,9 +471,23 @@ exports.thread12 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -353,12 +499,12 @@ exports.thread13 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -366,9 +512,23 @@ exports.thread13 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -380,12 +540,12 @@ exports.thread14 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -393,9 +553,23 @@ exports.thread14 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -407,12 +581,12 @@ exports.thread15 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -420,9 +594,23 @@ exports.thread15 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -434,12 +622,12 @@ exports.thread16 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -447,9 +635,23 @@ exports.thread16 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -461,12 +663,12 @@ exports.thread17 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -474,9 +676,23 @@ exports.thread17 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
@@ -488,12 +704,12 @@ exports.thread18 = async (req, res) => {
     try {
         const { url } = req.body;
         const account = req.body.account
-        
+
         if (url.includes('https://www.boscovs.com')) {
             let ans = await boscovbrandscraper(url, account)
             if (ans) {
                 await BrandUrl.updateOne(
-                    { account:account },
+                    { account: account },
                     { $pull: { producturl: url } }
                 )
                 res.status(200).json({ status: true })
@@ -501,9 +717,23 @@ exports.thread18 = async (req, res) => {
                 res.status(200).json({ status: false })
                 console.log("UPC data not found or error occurred for:", url);
             }
-        } else {
+        } else if (url.includes('https://www.walmart.com') || url.includes('/ip/')) {
+            let ans = await walmartproductscraper(url, account)
+            if (ans > 0) {
+                await BrandUrl.updateOne(
+                    { account: account, vendor: 'walmart' },
+                    { $pull: { producturl: url } }
+                )
+                res.status(200).json({ status: true, msg: ans })
+            } else {
+                res.status(200).json({ status: false })
+                console.log("UPC data not found or error occurred for:", url);
+            }
+        }
+
+        else {
             let result = await getupc(url, account);
-            result === 1 ? res.status(200).json({ status: true }) :  res.status(200).json({ status: false })            
+            result === 1 ? res.status(200).json({ status: true }) : res.status(200).json({ status: false })
         }
     } catch (err) {
         console.error("Error:", err);
